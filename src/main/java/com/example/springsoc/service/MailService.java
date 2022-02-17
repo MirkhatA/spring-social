@@ -1,8 +1,7 @@
 package com.example.springsoc.service;
 
 import com.example.springsoc.entity.NotificationEmail;
-import com.example.springsoc.exceptions.SpringRedditException;
-import com.example.springsoc.repository.VerificationTokenRepository;
+import com.example.springsoc.exceptions.SpringSocialException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
@@ -31,10 +30,10 @@ public class MailService {
         };
         try {
             mailSender.send(messagePreparator);
-            log.info("Activation email sent!!");
+            log.info("Email sent!");
         } catch (MailException e) {
             log.error("Exception occurred when sending mail", e);
-            throw new SpringRedditException("Exception occurred when sending mail to " + notificationEmail.getRecipient(), e);
+            throw new SpringSocialException("Exception occurred when sending mail to " + notificationEmail.getRecipient(), e);
         }
     }
 }

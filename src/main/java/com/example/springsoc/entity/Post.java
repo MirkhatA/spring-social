@@ -35,5 +35,5 @@ public class Post {
     private Instant createdDate;
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "id", referencedColumnName = "id")
-    private Subreddit subreddit;
+    private Subsocial subsocial;
 }

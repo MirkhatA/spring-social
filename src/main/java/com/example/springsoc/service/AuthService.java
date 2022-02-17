@@ -4,21 +4,21 @@ import com.example.springsoc.dto.RegisterRequest;
 import com.example.springsoc.entity.NotificationEmail;
 import com.example.springsoc.entity.User;
 import com.example.springsoc.entity.VerificationToken;
+import com.example.springsoc.exceptions.SpringSocialException;
 import com.example.springsoc.repository.UserRepository;
 import com.example.springsoc.repository.VerificationTokenRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
@@ -61,4 +61,16 @@ public class AuthService {
     }
 
 
+    public void verifyAccount(String token) {
+        Optional<VerificationToken> verificationToken = verificationTokenRepository.findByToken(token);
+        verificationToken.orElseThrow(() -> new SpringSocialException("Invalid token"));
+        fetchUserAndEnable(verificationToken.get());
+    }
+
+    private void fetchUserAndEnable(VerificationToken verificationToken) {
+        String username = verificationToken.getUser().getUsername();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringSocialException("No such user"));
+        user.setEnabled(true);
+        userRepository.save(user);
+    }
 }
