@@ -1,6 +1,7 @@
 package com.example.springsoc.service;
 
 import com.example.springsoc.dto.RegisterRequest;
+import com.example.springsoc.entity.NotificationEmail;
 import com.example.springsoc.entity.User;
 import com.example.springsoc.entity.VerificationToken;
 import com.example.springsoc.repository.UserRepository;
@@ -23,6 +24,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
+    private final MailService mailService;
+
 
     // as we use relational db, we need to add transactional
     @Transactional
@@ -38,6 +41,11 @@ public class AuthService {
 
         // get random token in token var
         String token = generateVerificationToken(user);
+
+
+        mailService.sendMail(new NotificationEmail("Activate acc",
+                user.getEmail(),
+                "http://localhost:8080/api/auth/accountVerification/" + token));
     }
 
 
