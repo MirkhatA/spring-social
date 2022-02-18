@@ -1,5 +1,7 @@
 package com.example.springsoc.service;
 
+import com.example.springsoc.dto.AuthenticationResponse;
+import com.example.springsoc.dto.LoginRequest;
 import com.example.springsoc.dto.RegisterRequest;
 import com.example.springsoc.entity.NotificationEmail;
 import com.example.springsoc.entity.User;
@@ -7,7 +9,12 @@ import com.example.springsoc.entity.VerificationToken;
 import com.example.springsoc.exceptions.SpringSocialException;
 import com.example.springsoc.repository.UserRepository;
 import com.example.springsoc.repository.VerificationTokenRepository;
+import com.example.springsoc.security.JwtProvider;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +32,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
 
 
     // as we use relational db, we need to add transactional
@@ -50,7 +59,7 @@ public class AuthService {
 
 
     private String generateVerificationToken(User user) {
-        // Use uuid to generate random token
+        // Use uuid to generat e random token
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(token);
@@ -72,5 +81,13 @@ public class AuthService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new SpringSocialException("No such user"));
         user.setEnabled(true);
         userRepository.save(user);
+    }
+
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        String token = jwtProvider.generateToken(authenticate);
+        return new AuthenticationResponse(token, loginRequest.getUsername());
     }
 }

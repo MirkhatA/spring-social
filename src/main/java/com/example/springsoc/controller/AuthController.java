@@ -1,5 +1,7 @@
 package com.example.springsoc.controller;
 
+import com.example.springsoc.dto.AuthenticationResponse;
+import com.example.springsoc.dto.LoginRequest;
 import com.example.springsoc.dto.RegisterRequest;
 import com.example.springsoc.service.AuthService;
 import lombok.AllArgsConstructor;
@@ -24,5 +26,11 @@ public class AuthController {
     public ResponseEntity<String> verifyAccount(@PathVariable String token) {
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account activated", HttpStatus.OK);
+    }
+
+    // receive request from client
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 }
